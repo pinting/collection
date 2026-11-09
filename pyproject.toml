@@ -1,0 +1,15 @@
+[project]
+name = "music"
+version = "0.2.0"
+description = "Music library scraper and showcase website for favorite albums."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Denes Tornyi", email = "astameteo@posteo.net" }
+]
+dependencies = [
+    "requests>=2.32.3",
+    "python-dotenv>=1.0.0",
+    "mutagen>=1.48.0",
+]

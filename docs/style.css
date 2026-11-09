@@ -1,0 +1,187 @@
+:root {
+  --background: #16120e;
+  --panel: #231c15;
+  --shelf: #4a3423;
+  --shelf-edge: #2e2015;
+  --text: #f2e9dc;
+  --muted: #b3a491;
+  --accent: #e0a458;
+  --accent-text: #1c1408;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.page-title {
+  margin: 0;
+  padding: 24px 24px 0;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+#genres {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 16px 24px 2px;
+  margin-bottom: 20px;
+}
+
+#genres:has(+ #toggle-genres:not([hidden])) {
+  margin-bottom: 0;
+}
+
+#genres.collapsed {
+  max-height: 122px;
+  overflow: hidden;
+}
+
+#toggle-genres {
+  display: block;
+  margin: 6px 24px 20px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+#toggle-genres[hidden] { display: none; }
+
+#toggle-genres:hover { text-decoration: underline; }
+
+#genres button {
+  padding: 5px 11px;
+  border: 1px solid #4b3e30;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+#genres button:hover { border-color: var(--accent); }
+
+#genres button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+#genres button span { opacity: 0.65; }
+
+#shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 28px 22px;
+  padding: 0 24px 48px;
+}
+
+.album {
+  min-width: 0;
+  padding-bottom: 8px;
+  border-bottom: 10px solid var(--shelf);
+  box-shadow: 0 5px 0 var(--shelf-edge);
+}
+
+.sleeve {
+  aspect-ratio: 1;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--panel);
+  box-shadow: 0 6px 14px rgb(0 0 0 / 55%);
+}
+
+.sleeve img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Four lines: two for the title, one each for the artists and the year */
+.info {
+  height: 5.2em;
+  margin-top: 10px;
+  overflow: hidden;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.info strong {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.info span {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.links a { display: flex; color: var(--muted); }
+
+.links svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.links a.spotify:hover,
+.links a.spotify:focus-visible { color: #1ed760; }
+
+.links a.tidal:hover,
+.links a.tidal:focus-visible { color: #fff; }
+
+.links .missing { display: flex; color: #5a4d3f; }
+
+.notice {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
+.sprites { position: absolute; }
+
+@media (max-width: 600px) {
+  .page-title {
+    padding: 16px 16px 0;
+    font-size: 1rem;
+  }
+
+  #genres { padding-inline: 16px; }
+
+  #toggle-genres { margin-inline: 16px; }
+
+  #shelf {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 14px;
+    padding-inline: 16px;
+  }
+}
