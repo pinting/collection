@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "music"
-version = "0.2.0"
-description = "Music library scraper and showcase website for favorite albums."
+name = "favorites"
+version = "0.3.0"
+description = "Favorites media library scrapers and showcase website for music albums and movies."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -13,3 +17,12 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "mutagen>=1.48.0",
 ]
+
+[project.scripts]
+favorites = "src.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+

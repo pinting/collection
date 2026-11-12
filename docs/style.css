@@ -18,14 +18,63 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-.page-title {
-  margin: 0;
+.header {
   padding: 24px 24px 0;
+}
+
+.views {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 1.15rem;
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.views h1,
+.view-title {
+  display: inline-block;
+  margin: 0;
+  padding: 0 0 4px;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: inherit;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  cursor: default;
+  user-select: none;
+}
+
+.view-link {
+  display: inline-block;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0 0 4px;
+  border-bottom: 2px solid transparent;
+  line-height: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.view-link:hover {
+  color: var(--accent);
+}
+
+.view-link.active {
   color: var(--text);
-  overflow-wrap: anywhere;
+  border-bottom-color: var(--accent);
+}
+
+.view-sep {
+  display: inline-block;
+  padding: 0 0 4px;
+  border-bottom: 2px solid transparent;
+  line-height: inherit;
+  color: #4b3e30;
+  user-select: none;
 }
 
 #genres {
@@ -71,6 +120,7 @@ body {
   font: inherit;
   font-size: 0.82rem;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 #genres button:hover { border-color: var(--accent); }
@@ -87,16 +137,28 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 28px 22px;
-  padding: 0 24px 48px;
+  padding: 32px 24px 48px;
 }
 
-.album {
+body.has-genres #shelf {
+  padding-top: 8px;
+}
+
+/* Fallback for when genres nav is hidden via inline style or empty */
+#genres[style*="display: none"] ~ #shelf,
+#genres:empty ~ #shelf {
+  padding-top: 32px;
+}
+
+/* Card shared styling */
+.item-card {
   min-width: 0;
   padding-bottom: 8px;
   border-bottom: 10px solid var(--shelf);
   box-shadow: 0 5px 0 var(--shelf-edge);
 }
 
+/* Album sleeve: square */
 .sleeve {
   aspect-ratio: 1;
   margin: 0;
@@ -106,6 +168,11 @@ body {
   box-shadow: 0 6px 14px rgb(0 0 0 / 55%);
 }
 
+/* Movie poster: 2/3 ratio */
+.sleeve.poster {
+  aspect-ratio: 2 / 3;
+}
+
 .sleeve img {
   display: block;
   width: 100%;
@@ -113,7 +180,7 @@ body {
   object-fit: cover;
 }
 
-/* Four lines: two for the title, one each for the artists and the year */
+/* Four lines: two for title, one each for artist/director and year */
 .info {
   height: 5.2em;
   margin-top: 10px;
@@ -142,37 +209,63 @@ body {
 .links {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  align-items: center;
   margin-top: 10px;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.8rem;
+  line-height: 1.2;
 }
 
-.links a { display: flex; color: var(--muted); }
-
-.links svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
+.links a,
+.links span.link-item {
+  color: #8c7b69;
+  text-decoration: none;
+  text-transform: lowercase;
+  transition: color 0.15s ease;
 }
 
+.links a:hover,
+.links a:focus-visible {
+  color: var(--accent);
+}
+
+/* Streaming & Database brand link hover colors */
 .links a.spotify:hover,
 .links a.spotify:focus-visible { color: #1ed760; }
 
 .links a.tidal:hover,
 .links a.tidal:focus-visible { color: #fff; }
 
-.links .missing { display: flex; color: #5a4d3f; }
+.links a.imdb:hover,
+.links a.imdb:focus-visible { color: #f5c518; }
+
+.links a.letterboxd:hover,
+.links a.letterboxd:focus-visible { color: #00e054; }
+
+.links .link-sep {
+  color: #4b3e30;
+  margin: 0 6px;
+  user-select: none;
+}
+
+.links .missing {
+  color: #4b3e30;
+  cursor: default;
+}
 
 .notice {
   grid-column: 1 / -1;
   color: var(--muted);
 }
 
-.sprites { position: absolute; }
-
 @media (max-width: 600px) {
-  .page-title {
+  .header {
     padding: 16px 16px 0;
+  }
+
+  .views {
     font-size: 1rem;
+    gap: 8px;
   }
 
   #genres { padding-inline: 16px; }
@@ -183,5 +276,10 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 14px;
     padding-inline: 16px;
+    padding-top: 24px;
+  }
+
+  body.has-genres #shelf {
+    padding-top: 8px;
   }
 }

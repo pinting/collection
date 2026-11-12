@@ -2,6 +2,12 @@
 .venv*
 __pycache__
 *.pyc
+*.egg-info/
+build/
+dist/
 database.db*
 .tidal_token.json
 session.json
+.pytest_cache
+
+

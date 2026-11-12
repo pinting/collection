@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>slash films slash favorites</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="views" aria-label="Collections">
+      <h1 class="view-title">collection</h1>
+      <span class="view-sep">/</span>
+      <a href="index.html#/music" class="view-link" data-view="music">music</a>
+      <span class="view-sep">/</span>
+      <a href="#/films" class="view-link" data-view="movies">films</a>
+    </nav>
+  </header>
+
+  <nav id="genres" class="collapsed" aria-label="Filter by genre"></nav>
+  <button id="toggle-genres" type="button" aria-controls="genres" aria-expanded="false" hidden></button>
+  <main id="shelf"></main>
+
+  <script>window.DEFAULT_VIEW = "movies";</script>
+  <script src="app.js"></script>
+</body>
+</html>
