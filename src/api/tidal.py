@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 
 from src.api.base import OAuthClient
 from src.config import Config
-from src.matching import clean_title, title_similarity
+from src.matching import VA_NAMES, clean_title, title_similarity
 from src.utils import fold_string
 
 
@@ -32,7 +32,7 @@ class TidalClient(OAuthClient):
 
         clean_alb = clean_title(album)
         fa = fold_string(artist)
-        query = clean_alb if fa in ("va", "various", "various artists") else f"{artist} {clean_alb}".strip()
+        query = clean_alb if fa in VA_NAMES else f"{artist} {clean_alb}".strip()
 
         try:
             data = self._get(
@@ -43,19 +43,24 @@ class TidalClient(OAuthClient):
                     "countryCode": self.config.tidal_country,
                 },
             )
-            included = [x for x in data.get("included", []) if x.get("type") == "albums"]
-            for cand in included[:5]:
+            results = data.get("data", [])
+            refs = results[0].get("relationships", {}).get("albums", {}).get("data", []) if results else []
+            ordered_ids = [r["id"] for r in refs if r.get("id")]
+            included = {item["id"]: item for item in data.get("included", []) if item.get("type") == "albums"}
+
+            for aid in ordered_ids:
+                cand = included.get(aid)
+                if not cand:
+                    continue
                 cand_title = cand.get("attributes", {}).get("title", "")
-                if title_similarity(clean_alb, cand_title) >= 0.70:
-                    album_id = cand.get("id")
-                    ext_links = cand.get("attributes", {}).get("externalLinks", [])
-                    url = f"https://tidal.com/browse/album/{album_id}"
-                    for link in ext_links:
+                if title_similarity(clean_alb, cand_title) >= 0.82 or title_similarity(album, cand_title) >= 0.82:
+                    url = f"https://tidal.com/browse/album/{aid}"
+                    for link in cand.get("attributes", {}).get("externalLinks", []):
                         if link.get("meta", {}).get("type") == "TIDAL_SHARING":
                             url = link.get("href")
                             break
-                    return str(album_id), url
-        except Exception as e:
+                    return str(aid), url
+        except Exception:
             # Non-fatal search exception
             pass
 

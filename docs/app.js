@@ -8,7 +8,7 @@ const viewTabs = document.querySelectorAll(".view-link");
 const COLLECTIONS = {
   music: {
     csv: "albums.csv",
-    title: "slash music slash favorites",
+    title: "collection",
     hasGenres: true,
     toItem: (r) => ({
       type: "music",
@@ -24,7 +24,7 @@ const COLLECTIONS = {
   },
   movies: {
     csv: "movies.csv",
-    title: "slash films slash favorites",
+    title: "collection",
     hasGenres: false,
     toItem: (r) => ({
       type: "movies",
@@ -232,7 +232,7 @@ function parseRoute() {
 }
 
 function updateNav(view) {
-  document.title = COLLECTIONS[view]?.title || "slash favorites";
+  document.title = COLLECTIONS[view]?.title || "collection";
   for (const tab of viewTabs) {
     tab.classList.toggle("active", tab.dataset.view === view);
   }

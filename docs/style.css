@@ -218,7 +218,7 @@ body.has-genres #shelf {
 
 .links a,
 .links span.link-item {
-  color: #8c7b69;
+  color: var(--muted);
   text-decoration: none;
   text-transform: lowercase;
   transition: color 0.15s ease;

@@ -5,9 +5,21 @@ from typing import List, Optional, Tuple
 from src.utils import fold_string, to_ascii
 
 CLUTTER_PATTERN = re.compile(
-    r"\s*[\(\[](?:remaster|deluxe|expanded|anniversary|version|edition|mono|stereo|bonus|live|collector|\d{4})[^\)\]]*[\)\]]",
+    r"\s*[\(\[](?:remaster|deluxe|expanded|anniversary|version|edition|mono|stereo|bonus|live|collector|digital|soundtrack|score|\d{4})[^\)\]]*[\)\]]",
     re.IGNORECASE,
 )
+
+ROMAN_NUMS = {"i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6", "vii": "7", "viii": "8", "ix": "9", "x": "10"}
+VOL_RE = re.compile(r"\b(?:vol(?:ume)?\.?\s*([0-9ivx]+)|part\s*([0-9ivx]+)|#\s*([0-9]+)|(ii|iii|iv|vi|vii|viii|ix|x|\d+))\b", re.IGNORECASE)
+
+
+def extract_vols(text: str) -> set:
+    """Extracts normalized sequence or volume numbers from text."""
+    res = set()
+    for m in VOL_RE.finditer(text):
+        val = next(g for g in m.groups() if g is not None).lower()
+        res.add(ROMAN_NUMS.get(val, val))
+    return res
 
 MOVIE_LINE_PATTERN = re.compile(r"^(.+?)\s*-\s*(\d{4})\s*-\s*(.+)$")
 ALBUM_FOLDER_PATTERN = re.compile(r"^(.+?)\s+-\s+(\d{4})\s+-\s+(.+)$")
@@ -30,10 +42,16 @@ def title_similarity(a: str, b: str) -> float:
     if fa == fb:
         return 1.0
 
-    # If one title contains the other and covers >= 70% of the length
-    if fa in fb or fb in fa:
+    # If sequence or volume numbers differ (e.g. Vol 1 vs Vol 2, Trabant vs Trabant II), do not match
+    vols_a = extract_vols(fa)
+    vols_b = extract_vols(fb)
+    if vols_a != vols_b:
+        return 0.0
+
+    # If one title contains the other exactly and covers >= 85% of length
+    if f" {fa} " in f" {fb} " or f" {fb} " in f" {fa} ":
         shorter, longer = (fa, fb) if len(fa) < len(fb) else (fb, fa)
-        if len(shorter) / len(longer) >= 0.7:
+        if len(shorter) / len(longer) >= 0.85:
             return 0.95
 
     return difflib.SequenceMatcher(None, fa, fb).ratio()

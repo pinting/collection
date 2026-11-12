@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_FILE = os.path.join(ROOT, ".env")
+load_dotenv(ENV_FILE)
 
 STAGES = ("music", "movies")
 STAGE_CHOICES = STAGES + ("all",)
@@ -33,6 +34,7 @@ class Config:
     export_music_csv: str = option(os.path.join(ROOT, "docs", "albums.csv"), "Export CSV for music albums")
     export_movies_csv: str = option(os.path.join(ROOT, "docs", "movies.csv"), "Export CSV for movies")
     seed_csv: str = option(os.path.join(ROOT, "docs", "albums.csv"), "Seed CSV to preserve rankings & Spotify URLs")
+    db_path: str = option(os.path.join(ROOT, "..", "musicd", "database.db"), "Path to musicd database.db for metadata reference")
     env_file: str = option(ENV_FILE, "Path to .env file")
 
     # Network & Retries
