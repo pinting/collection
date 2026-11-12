@@ -78,18 +78,59 @@ def artists_match(a: str, b: str) -> bool:
     return bool(set_a & set_b)
 
 
-def director_matches(dir_a: str, dir_b: str) -> bool:
-    """Checks whether two director names match, handling Western vs Eastern name ordering."""
+def _single_person_matches(dir_a: str, dir_b: str) -> bool:
     fa = fold_string(dir_a)
     fb = fold_string(dir_b)
     if not fa or not fb:
         return False
-    if fa == fb or fa in fb or fb in fa:
+    if fa == fb:
         return True
 
-    parts_a = {p for p in fa.split() if len(p) > 2}
-    parts_b = {p for p in fb.split() if len(p) > 2}
-    return bool(parts_a & parts_b)
+    fa_clean = re.sub(r"^the\s+", "", fa)
+    fb_clean = re.sub(r"^the\s+", "", fb)
+    if fa_clean == fb_clean:
+        return True
+
+    parts_a = [p for p in fa_clean.split() if len(p) >= 2]
+    parts_b = [p for p in fb_clean.split() if len(p) >= 2]
+    set_a, set_b = set(parts_a), set(parts_b)
+
+    # Permutation (e.g. Bacsó Péter vs Péter Bacsó, Hu Bo vs Bo Hu)
+    if set_a == set_b:
+        return True
+
+    # Subset when both names have 2+ parts (e.g. Francis Ford Coppola vs Francis Coppola)
+    if len(set_a) >= 2 and len(set_b) >= 2:
+        if set_a.issubset(set_b) or set_b.issubset(set_a):
+            return True
+        stems_a = {p.rstrip("s") for p in parts_a}
+        stems_b = {p.rstrip("s") for p in parts_b}
+        if stems_a == stems_b or (len(stems_a) >= 2 and stems_a.issubset(stems_b)):
+            return True
+
+    # Single-word name or collective (e.g. "The Wachowskis" -> parts_a = ["wachowskis"])
+    if len(parts_a) == 1:
+        stem_a = parts_a[0].rstrip("s")
+        stems_b = {p.rstrip("s") for p in parts_b}
+        if stem_a in stems_b or any(stem_a in p for p in stems_b if len(stem_a) >= 5):
+            return True
+
+    if len(parts_b) == 1:
+        stem_b = parts_b[0].rstrip("s")
+        stems_a = {p.rstrip("s") for p in parts_a}
+        if stem_b in stems_a or any(stem_b in p for p in stems_a if len(stem_b) >= 5):
+            return True
+
+    return False
+
+
+def director_matches(dir_a: str, dir_b: str) -> bool:
+    """Checks whether two director names match, handling Western vs Eastern name ordering."""
+    if not dir_a or not dir_b:
+        return False
+    people_a = [p.strip() for p in re.split(r"[,/;&]|\band\b", dir_a) if p.strip()]
+    people_b = [p.strip() for p in re.split(r"[,/;&]|\band\b", dir_b) if p.strip()]
+    return any(_single_person_matches(pa, pb) for pa in people_a for pb in people_b)
 
 
 def make_slugs(title: str, year: int, director: str = "") -> List[str]:
@@ -110,35 +151,35 @@ def make_slugs(title: str, year: int, director: str = "") -> List[str]:
     # Short titles special handling (e.g. "K" or "K2" or "Moebius")
     if len(s_clean) <= 3 and parens:
         p_slug = to_slug(parens[0])
-        slugs.append(f"{s_clean}_{p_slug}_{year}")
+        slugs.append(p_slug)
         slugs.append(f"{s_clean}_{p_slug}")
         slugs.append(f"{p_slug}_{year}")
-        slugs.append(p_slug)
+        slugs.append(f"{s_clean}_{p_slug}_{year}")
 
-    # Full clean title with and without year
+    # Clean title without year first, then with year
     if s_full and len(s_full) > 1:
-        slugs.append(f"{s_full}_{year}")
         slugs.append(s_full)
+        slugs.append(f"{s_full}_{year}")
 
     # Clean title (without parens) with and without year
     if s_clean and len(s_clean) > 1 and s_clean != s_full:
-        slugs.append(f"{s_clean}_{year}")
         slugs.append(s_clean)
+        slugs.append(f"{s_clean}_{year}")
 
     # Parenthetical candidates (e.g. English title or subtitle)
     for par in parens:
         sp = to_slug(par)
         if len(sp) > 1:
-            slugs.append(f"{sp}_{year}")
             slugs.append(sp)
+            slugs.append(f"{sp}_{year}")
 
     # Subtitles split by dash or colon
     parts = [p.strip() for p in re.split(r"[-:]", clean) if len(p.strip()) > 2]
     for p in parts:
         sp = to_slug(p)
         if len(sp) > 2:
-            slugs.append(f"{sp}_{year}")
             slugs.append(sp)
+            slugs.append(f"{sp}_{year}")
 
     if len(s_clean) <= 3 and director:
         dir_slug = to_slug(director)

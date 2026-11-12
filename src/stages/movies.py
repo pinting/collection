@@ -81,7 +81,21 @@ class MoviesStage:
         # 1. Primary check via IMDb suggestion client
         match = self.imdb.find_movie(title, year, director)
         if match and match.image_url:
-            return match.id, match.image_url
+            if director:
+                if director_matches(director, match.credits):
+                    return match.id, match.image_url
+
+                meta = self.cinemeta.fetch_meta(match.id)
+                c_dirs = meta.get("director", [])
+                if isinstance(c_dirs, str):
+                    c_dirs = [c_dirs]
+                if c_dirs and any(director_matches(director, d) for d in c_dirs):
+                    return match.id, match.image_url
+                if not c_dirs:
+                    return match.id, match.image_url
+                # If Cinemeta explicitly lists other directors, reject match and try secondary search
+            else:
+                return match.id, match.image_url
 
         # 2. Secondary check: for foreign films with translated titles, search by slugs and verify director via Cinemeta
         slugs = make_slugs(title, year, director)

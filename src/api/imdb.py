@@ -25,6 +25,8 @@ class ImdbClient(APIClient):
         clean_t = fold_string(re.sub(r"[\(\[].*?[\)\]]", "", title))
         parens = [fold_string(m.group(1)) for m in re.finditer(r"[\(\[](.*?)[\)\]]", title)]
 
+        candidates = []
+
         for slug in slugs:
             if not slug:
                 continue
@@ -55,26 +57,50 @@ class ImdbClient(APIClient):
                     sim = difflib.SequenceMatcher(None, ft, fit).ratio()
                     sim_clean = difflib.SequenceMatcher(None, clean_t, fit).ratio()
                     sim_paren = max([difflib.SequenceMatcher(None, p, fit).ratio() for p in parens] or [0])
+                    best_sim = max(sim, sim_clean, sim_paren)
 
                     contain = (
-                        (ft and ft in fit)
-                        or (fit and fit in ft)
-                        or (clean_t and len(clean_t) > 2 and (clean_t in fit or fit in clean_t))
-                        or any(p and len(p) > 2 and (p in fit or fit in p) for p in parens)
+                        (ft and ft in fit and len(ft) >= 4)
+                        or (fit and fit in ft and len(fit) >= 4)
+                        or (clean_t and len(clean_t) >= 4 and (clean_t in fit or fit in clean_t))
+                        or any(p and len(p) >= 4 and (p in fit or fit in p) for p in parens)
                     )
 
+                    exact_title = (ft == fit or clean_t == fit or any(p == fit for p in parens))
                     dir_match = director_matches(director, credits) if director else False
 
-                    # Verified high-confidence match
-                    if max(sim, sim_clean, sim_paren) >= 0.55 or contain or dir_match:
-                        return ImdbMovie(
-                            id=item.get("id", ""),
-                            title=imdb_t,
-                            year=cand_year,
-                            image_url=cand_img,
-                            credits=credits,
-                        )
+                    # In find_movie, title must match closely
+                    if not exact_title and not contain and best_sim < 0.75:
+                        continue
+                    if not dir_match and not exact_title and best_sim < 0.80:
+                        continue
+
+                    score = 0.0
+                    if exact_title:
+                        score += 80.0
+                    elif contain:
+                        score += 60.0
+                    else:
+                        score += best_sim * 50.0
+
+                    if dir_match:
+                        score += 50.0
+
+                    score -= abs(cand_year - year) * 5.0
+
+                    movie = ImdbMovie(
+                        id=item.get("id", ""),
+                        title=imdb_t,
+                        year=cand_year,
+                        image_url=cand_img,
+                        credits=credits,
+                    )
+                    candidates.append((score, movie))
             except Exception:
                 pass
 
-        return None
+        if not candidates:
+            return None
+
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
