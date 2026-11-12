@@ -229,19 +229,6 @@ body.has-genres #shelf {
   color: var(--accent);
 }
 
-/* Streaming & Database brand link hover colors */
-.links a.spotify:hover,
-.links a.spotify:focus-visible { color: #1ed760; }
-
-.links a.tidal:hover,
-.links a.tidal:focus-visible { color: #fff; }
-
-.links a.imdb:hover,
-.links a.imdb:focus-visible { color: #f5c518; }
-
-.links a.letterboxd:hover,
-.links a.letterboxd:focus-visible { color: #00e054; }
-
 .links .link-sep {
   color: #4b3e30;
   margin: 0 6px;
